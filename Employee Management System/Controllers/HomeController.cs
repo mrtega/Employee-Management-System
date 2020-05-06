@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Employee_Management_System.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -24,12 +25,14 @@ namespace Employee_Management_System.Controllers
             _employeeRepository = employeeRepository;
             this.hostingEnvironment = hostingEnvironment;
         }
+        [AllowAnonymous]
         public ViewResult Index()
         {
             var model = _employeeRepository.GetAllEmployee();
             return View(model);
         }
 
+        [AllowAnonymous]
         public ViewResult Details(int? id)
         {
             //throw new Exception("Error in details view");
@@ -75,6 +78,7 @@ namespace Employee_Management_System.Controllers
 
 
         [HttpPost]
+        
         public IActionResult Edit(EmployeeEditViewModel model)
         {
             if (ModelState.IsValid)
@@ -123,6 +127,7 @@ namespace Employee_Management_System.Controllers
        
 
         [HttpPost]
+        
         public IActionResult Create(EmployeeCreateViewModel model)
         {
             if (ModelState.IsValid)
