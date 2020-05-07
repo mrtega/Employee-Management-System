@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementSystem.Controllers
 {
-    
+
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> userManager;
@@ -30,7 +30,7 @@ namespace EmployeeManagementSystem.Controllers
             return RedirectToAction("index", "home");
         }
 
-        
+
 
         [HttpGet]
         [AllowAnonymous]
@@ -55,22 +55,27 @@ namespace EmployeeManagementSystem.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, City = model.City};
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, City = model.City };
                 var result = await userManager.CreateAsync(user, model.Password);
+
 
                 if (result.Succeeded)
                 {
+                    if (signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                    {
+                        return RedirectToAction("ListUsers", "Administration");
+                    }
                     await signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("index", "home");
                 }
-                foreach(var error in result.Errors )
+                foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
-            
+
 
             return View(model);
         }
@@ -88,12 +93,12 @@ namespace EmployeeManagementSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                
+
                 var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
 
                 if (result.Succeeded)
                 {
-                    if(!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     {
                         return LocalRedirect(returnUrl);
                     }
@@ -101,15 +106,21 @@ namespace EmployeeManagementSystem.Controllers
                     {
                         return RedirectToAction("index", "home");
                     }
-                    
+
                 }
-                
-                    ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
-                
+
+                ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+
             }
 
 
             return View(model);
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }
